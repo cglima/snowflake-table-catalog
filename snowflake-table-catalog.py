@@ -1,36 +1,21 @@
 #from turtle import onclick
 import streamlit as st
-import snowflake.connector
 import pandas as pd
 #import streamlit.components.v1 as components
 st.set_page_config(layout="wide")
-# Initialize connection.
-# Uses st.experimental_singleton to only run once.
 
+# Create a connection object.
+# `st.connection` is the modern way to connect to datasources and handles secrets for you.
+conn = st.connection("snowflake")
 
-@st.experimental_singleton
-def init_connection():
-    return snowflake.connector.connect(**st.secrets["snowflake"])
-
-
-conn = init_connection()
-cur = conn.cursor()
-
-# Perform query.
-# Uses st.experimental_memo to only rerun when the query changes or after 10 min.
-
-@st.experimental_memo(ttl=600)
+# Uses st.cache_data to only rerun when the query changes or after 10 min.
+@st.cache_data(ttl=600)
 def run_query(query):
-    with conn.cursor() as cur:
-        cur.execute(query)
-
-        dat = cur.fetchall()
-        df = pd.DataFrame(dat, columns=[col[0] for col in cur.description])
-        return df
+    return conn.query(query, show_spinner="Buscando dados no Snowflake...")
 
 
 df = run_query("""SELECT
-    t.TABLE_ID,
+    concat_ws('.',t.table_catalog,t.table_schema,t.table_name) as TABLE_ID,
     t.TABLE_CATALOG,
     t.CREATED,
     t.TABLE_NAME,
@@ -47,17 +32,20 @@ df = run_query("""SELECT
     t.COMMENT,
     c.column_count
 from
-    SNOWFLAKE.ACCOUNT_USAGE.TABLES t
+    LATAM_ANALYTICS_DLH.INFORMATION_SCHEMA.TABLES t
     left join (
         select
-            table_id,
-            count(distinct column_id) column_count
+            concat_ws('.',table_catalog,table_schema,table_name) as table_id,
+            count(1) over(partition by table_id) column_count
         from
-            SNOWFLAKE.ACCOUNT_USAGE.COLUMNS
+            latam_analytics_dlh.information_schema.columns
         group by
             table_id
-    ) c on c.table_id = t.table_id
-    where t.table_schema not like '%ANON_HOL%' and deleted is null;""")
+    ) c 
+    on
+     c.table_id = concat_ws('.',t.table_catalog,t.table_schema,t.table_name)
+    where
+        t.table_schema <> 'INFORMATION_SCHEMA';      """)
 
 df2 = df
 # if 'df' not in st.session_state:
@@ -109,7 +97,6 @@ def human_format(num):
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
-        num /= 1000.0
     # add more suffixes if you need them
     return ('%.2f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])).replace('.00', '')
 
@@ -163,7 +150,7 @@ if 'selectbox_database_key' not in st.session_state:
 
 # Table Catalog/Database
 fv_database = df['TABLE_CATALOG'].drop_duplicates()
-fv_database = fv_database.append(all_option)
+fv_database = pd.concat([fv_database, all_option])
 
 selectbox_database = st.sidebar.selectbox(
     'Database', fv_database, index=len(fv_database)-1, key=st.session_state.selectbox_database_key)
@@ -175,7 +162,7 @@ else:
 
 # Table Schema
 fv_table_schema = df['TABLE_SCHEMA'].drop_duplicates()
-fv_table_schema = fv_table_schema.append(all_option)
+fv_table_schema = pd.concat([fv_table_schema, all_option])
 
 selectbox_schema = st.sidebar.selectbox(
     "Table Schema", fv_table_schema, len(fv_table_schema)-1, key=st.session_state.selectbox_schema_key)
@@ -187,7 +174,7 @@ else:
 
 # Table Owner
 fv_owner = df['TABLE_OWNER'].drop_duplicates()
-fv_owner = fv_owner.append(all_option)
+fv_owner = pd.concat([fv_owner, all_option])
 selectbox_owner = st.sidebar.selectbox(
     "Table Owner", fv_owner, len(fv_owner)-1, key=st.session_state.selectbox_owner_key)
 

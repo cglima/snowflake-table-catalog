@@ -78,3 +78,12 @@ A partir do diretório raiz do projeto, execute:
     ```
 
 O servidor estará disponível em `http://127.0.0.1:8000`.
+
+## Endpoints da API
+
+A API fornece os seguintes endpoints:
+
+- **`GET /`**: Retorna uma mensagem de status da API.
+- **`GET /tables`**: Retorna uma lista de todas as tabelas do catálogo.
+
+A documentação interativa da API está disponível em `http://127.0.0.1:8000/docs` quando o servidor está em execução.

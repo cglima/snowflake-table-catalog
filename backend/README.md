@@ -80,3 +80,21 @@ A partir do diretório raiz do projeto, execute:
     ```
 
 O servidor estará disponível em `http://127.0.0.1:8000`.
+
+## Docker
+
+Para facilitar o desenvolvimento e o deploy, a aplicação pode ser executada em um contêiner Docker.
+
+1.  **Construa a imagem Docker:**
+
+    A partir do diretório `backend`, execute:
+    ```bash
+    docker build -t snowflake-table-catalog-backend .
+    ```
+
+2.  **Execute o contêiner:**
+    ```bash
+    docker run -p 8000:8000 snowflake-table-catalog-backend
+    ```
+
+A aplicação estará disponível em [http://localhost:8000](http://localhost:8000).

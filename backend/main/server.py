@@ -6,6 +6,7 @@ It creates the FastAPI app and defines the API endpoints.
 import os
 from fastapi import FastAPI
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 from backend.application.use_cases.get_tables import GetTables
 from backend.infrastructure.repositories import CsvTableRepository, SnowflakeTableRepository
 
@@ -15,6 +16,18 @@ app = FastAPI(
     title="Snowflake Table Catalog API",
     description="API for querying the Snowflake table catalog.",
     version="1.0.0"
+)
+
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/", tags=["Root"])

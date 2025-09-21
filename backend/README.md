@@ -57,20 +57,22 @@ A aplicação utiliza um arquivo `.env` para carregar as variáveis de ambiente.
 
 Crie um arquivo `.env` na raiz do projeto e adicione as seguintes variáveis:
 
-   - **Para desenvolvimento (usando CSV):**
-     ```
-     APP_ENV=development
-     ```
+- **Para desenvolvimento (usando CSV):**
 
-   - **Para produção (usando Snowflake):**
-     ```
+    ```bash
+     APP_ENV=development
+    ```
+
+3. **Para produção (usando Snowflake):**
+
+    ```bash
      APP_ENV=production
      SNOWFLAKE_USER=seu_usuario
      SNOWFLAKE_PASSWORD=sua_senha
      SNOWFLAKE_ACCOUNT=sua_conta
      ```
 
-3.  **Inicie o servidor:**
+1. **Inicie o servidor:**
 
 A partir do diretório raiz do projeto, execute:
     ```bash
@@ -78,12 +80,3 @@ A partir do diretório raiz do projeto, execute:
     ```
 
 O servidor estará disponível em `http://127.0.0.1:8000`.
-
-## Endpoints da API
-
-A API fornece os seguintes endpoints:
-
-- **`GET /`**: Retorna uma mensagem de status da API.
-- **`GET /tables`**: Retorna uma lista de todas as tabelas do catálogo.
-
-A documentação interativa da API está disponível em `http://127.0.0.1:8000/docs` quando o servidor está em execução.

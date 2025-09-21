@@ -64,3 +64,7 @@ venv.bak/
 
 # macOS
 .DS_Store
+
+#streamlit
+streamlit_app/
+*.streamlit
